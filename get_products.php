@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,17 +8,17 @@
     <link rel="stylesheet" href="css.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
                 <h1 class="logo">ModernStore</h1>
             </div>
             <div class="nav-menu">
-                <a href="index.php" class="nav-link active">Home</a>
+                <a href="index.html" class="nav-link active">Home</a>
                 <a href="products.php" class="nav-link">Shop</a>
-                <a href="add_form.php" class="nav-link">Admin</a>
+                <a href="login_form.php" class="nav-link">Admin</a>
             </div>
             <div class="nav-actions">
                 <button class="cart-icon">🛒</button>
@@ -25,21 +26,19 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h2 class="hero-subtitle">Welcome to Premium E-Commerce</h2>
+            <h2 class="hero-subtitle">Welcome to Premium E-Commerce Shop</h2>
             <h1 class="hero-title">Discover Premium Products Curated For You</h1>
             <p class="hero-description">Shop from our exclusive collection of handpicked products with guaranteed quality and fast delivery.</p>
             <div class="hero-buttons">
                 <a href="products.php" class="btn btn-primary">Shop Now</a>
-                <a href="#featured" class="btn btn-secondary">See Featured Items</a>
+                <a href="#featured" style="margin-left: 10px; color: aliceblue;" class="btn btn-secondary">See Featured Items</a>
             </div>
         </div>
         <div class="hero-background"></div>
     </section>
 
-    <!-- Trust Badges -->
     <section class="trust-section">
         <div class="trust-grid">
             <div class="trust-item">
@@ -65,61 +64,25 @@
         </div>
     </section>
 
-    <!-- Featured Products -->
     <section id="featured" class="featured-section">
         <div class="section-header">
             <h2>Featured Products</h2>
             <p>Handpicked selections just for you</p>
         </div>
-        <div class="featured-grid">
-            <?php
-            $con = mysqli_connect("localhost", "root", "", "crud");
-            if(!mysqli_connect_errno()){
-                $sql = "SELECT * FROM products LIMIT 6";
-                $result = mysqli_query($con, $sql);
-                
-                if(mysqli_num_rows($result) > 0) {
-                    while($row = mysqli_fetch_assoc($result)) {
-                        $inStock = $row['stock'] > 0;
-                        echo '<div class="product-card">';
-                        echo '  <div class="product-image-wrapper">';
-                        echo '    <img src="' . htmlspecialchars($row['image']) . '" alt="' . htmlspecialchars($row['name']) . '" class="product-image" onerror="this.src=\'https://placehold.co/300x300?text=' . urlencode($row['name']) . '\'">';
-                        if(!$inStock) {
-                            echo '    <div class="out-of-stock">Out of Stock</div>';
-                        }
-                        echo '  </div>';
-                        echo '  <div class="product-info">';
-                        echo '    <h3 class="product-name">' . htmlspecialchars($row['name']) . '</h3>';
-                        echo '    <div class="product-footer">';
-                        echo '      <span class="product-price">$' . number_format($row['price'], 2) . '</span>';
-                        echo '      <span class="product-stock">' . $row['stock'] . ' in stock</span>';
-                        echo '    </div>';
-                        echo '  </div>';
-                        echo '</div>';
-                    }
-                } else {
-                    echo '<p class="no-products">No products available yet</p>';
-                }
-                mysqli_close($con);
-            }
-            ?>
+        
+        <div class="featured-grid" id="dynamic-products-container">
+            <p style="grid-column: 1/-1; text-align:center; color:var(--text-secondary);">Loading live products...</p>
         </div>
+
         <div class="view-all-container">
-            <a href="products.php" class="btn btn-primary btn-lg">View All Products</a>
+            <a href="products.php" class="btn btn-primary btn-lg">View All Database Products</a>
         </div>
     </section>
 
-    <!-- Stats Section -->
     <section class="stats-section">
         <div class="stats-wrapper">
-            <?php
-            $con = mysqli_connect("localhost", "root", "", "crud");
-            $count_result = mysqli_query($con, "SELECT COUNT(*) as total FROM products");
-            $count = mysqli_fetch_assoc($count_result);
-            $total = $count['total'];
-            ?>
             <div class="stat-item">
-                <div class="stat-number"><?php echo $total; ?></div>
+                <div class="stat-number" id="total-products-count">0</div>
                 <div class="stat-label">Products Available</div>
             </div>
             <div class="stat-item">
@@ -134,11 +97,9 @@
                 <div class="stat-number">24/7</div>
                 <div class="stat-label">Customer Support</div>
             </div>
-            <?php mysqli_close($con); ?>
         </div>
     </section>
 
-    <!-- Newsletter Section -->
     <section class="newsletter-section">
         <div class="newsletter-content">
             <h2>Stay Updated</h2>
@@ -150,7 +111,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
@@ -185,5 +145,61 @@
             <p>&copy; 2024 ModernStore. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('get_products.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('dynamic-products-container').innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--danger);">${data.error}</p>`;
+                        return;
+                    }
+
+                    // Dynamic live counter updates
+                    document.getElementById('total-products-count').textContent = data.total_count + "+";
+
+                    const container = document.getElementById('dynamic-products-container');
+                    container.innerHTML = ''; 
+
+                    if (data.products.length === 0) {
+                        container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-secondary);">No products available yet.</p>';
+                        return;
+                    }
+
+                    // Dynamically generate the layout blocks using the exact CSS rules we fixed
+                    data.products.forEach(product => {
+                        const inStock = product.stock > 0;
+                        const stockOverlay = !inStock ? `<div class="stock-overlay">Out of Stock</div>` : '';
+                        const stockLabel = inStock ? 'In Stock' : 'Out of Stock';
+                        const cardClass = inStock ? 'product-card' : 'product-card out-of-stock';
+
+                        const cardHtml = `
+                            <div class="${cardClass}">
+                                <div class="product-image-wrapper">
+                                    <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://placehold.co/300x300?text='+encodeURIComponent(product.name)">
+                                    ${stockOverlay}
+                                </div>
+                                <div class="product-info">
+                                    <div class="product-header">
+                                        <h3 class="product-name">${product.name}</h3>
+                                    </div>
+                                    <div class="product-footer">
+                                        <span class="product-price">$${product.price}</span>
+                                        <span class="product-stock">${stockLabel}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.innerHTML += cardHtml;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading API endpoints:', error);
+                    document.getElementById('dynamic-products-container').innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--danger);">Error displaying catalog interface.</p>';
+                });
+        });
+    </script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="css.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <nav class="navbar">
         <div class="nav-container">
@@ -16,7 +18,7 @@
             <div class="nav-menu">
                 <a href="index.html" class="nav-link active">Home</a>
                 <a href="products.php" class="nav-link">Shop</a>
-                <a href="add_form.php" class="nav-link">Admin</a>
+                <a href="login_form.php" class="nav-link">Admin</a>
             </div>
             <div class="nav-actions">
                 <button class="cart-icon">🛒</button>
@@ -31,7 +33,7 @@
             <p class="hero-description">Shop from our exclusive collection of handpicked products with guaranteed quality and fast delivery.</p>
             <div class="hero-buttons">
                 <a href="products.php" class="btn btn-primary">Shop Now</a>
-                <a href="#featured" class="btn btn-secondary">See Featured Items</a>
+                <a href="#featured" style="margin-left: 10px; color: aliceblue;" class="btn btn-secondary">See Featured Items</a>
             </div>
         </div>
         <div class="hero-background"></div>
@@ -65,50 +67,15 @@
     <section id="featured" class="featured-section">
         <div class="section-header">
             <h2>Featured Products</h2>
-            <p>Handpicked selections just for you</p>
+            <p>Handpicked selections directly from our live catalog</p>
         </div>
-        <div class="featured-grid">
-            
-            <div class="product-card">
-                <div class="product-image-wrapper">
-                    <img src="https://placehold.co/300x300?text=Premium+Phone" alt="Phone" class="product-image">
-                </div>
-                <div class="product-info">
-                    <h3 class="product-name">Premium Smartphone</h3>
-                    <div class="product-footer">
-                        <span class="product-price">$899.00</span>
-                        <span class="product-stock">In stock</span>
-                    </div>
-                </div>
+        
+        <div class="featured-grid" id="dynamic-products-container">
+            <div style="grid-column: 1/-1; text-align:center; padding: 3rem 0;">
+                <p style="color:var(--text-secondary); font-size: 1.1rem;">Loading premium products from server inventory...</p>
             </div>
-
-            <div class="product-card">
-                <div class="product-image-wrapper">
-                    <img src="https://placehold.co/300x300?text=Pro+Laptop" alt="Laptop" class="product-image">
-                </div>
-                <div class="product-info">
-                    <h3 class="product-name">Pro Developer Laptop</h3>
-                    <div class="product-footer">
-                        <span class="product-price">$1299.00</span>
-                        <span class="product-stock">In stock</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="product-card">
-                <div class="product-image-wrapper">
-                    <img src="https://placehold.co/300x300?text=Wireless+Mouse" alt="Mouse" class="product-image">
-                </div>
-                <div class="product-info">
-                    <h3 class="product-name">Ergonomic Wireless Mouse</h3>
-                    <div class="product-footer">
-                        <span class="product-price">$49.99</span>
-                        <span class="product-stock">In stock</span>
-                    </div>
-                </div>
-            </div>
-
         </div>
+
         <div class="view-all-container">
             <a href="products.php" class="btn btn-primary btn-lg">View All Database Products</a>
         </div>
@@ -117,7 +84,7 @@
     <section class="stats-section">
         <div class="stats-wrapper">
             <div class="stat-item">
-                <div class="stat-number">100+</div>
+                <div class="stat-number" id="total-products-count">0</div>
                 <div class="stat-label">Products Available</div>
             </div>
             <div class="stat-item">
@@ -177,8 +144,77 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 ModernStore. All rights reserved.</p>
+            <p>&copy; 2026 ModernStore. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('get_products.php')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network status response code not healthy");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const container = document.getElementById('dynamic-products-container');
+                    
+                    if (data.error) {
+                        container.innerHTML = `
+                            <p style="grid-column:1/-1; text-align:center; color:var(--danger); font-weight:600;">
+                                Backend Configuration Error: ${data.error}
+                            </p>`;
+                        return;
+                    }
+
+                    // Dynamic live counter updates
+                    document.getElementById('total-products-count').textContent = data.total_count + "+";
+
+                    container.innerHTML = ''; 
+
+                    if (!data.products || data.products.length === 0) {
+                        container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-secondary);">No products available yet.</p>';
+                        return;
+                    }
+
+                    // Dynamically generate layout blocks matching your premium CSS layout
+                    data.products.forEach(product => {
+                        const inStock = parseInt(product.stock) > 0;
+                        const stockOverlay = !inStock ? `<div class="stock-overlay">Out of Stock</div>` : '';
+                        const stockLabel = inStock ? 'In Stock' : 'Out of Stock';
+                        const cardClass = inStock ? 'product-card' : 'product-card out-of-stock';
+
+                        const cardHtml = `
+                            <div class="${cardClass}">
+                                <div class="product-image-wrapper">
+                                    <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://placehold.co/300x300?text='+encodeURIComponent(product.name)">
+                                    ${stockOverlay}
+                                </div>
+                                <div class="product-info">
+                                    <div class="product-header">
+                                        <h3 class="product-name">${product.name}</h3>
+                                    </div>
+                                    <div class="product-footer">
+                                        <span class="product-price">$${parseFloat(product.price).toFixed(2)}</span>
+                                        <span class="product-stock">${stockLabel}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.innerHTML += cardHtml;
+                    });
+                })
+                .catch(error => {
+                    console.error('Fatal bridge parsing error:', error);
+                    document.getElementById('dynamic-products-container').innerHTML = `
+                        <div style="grid-column: 1/-1; text-align:center; padding: 2rem; border:1px dashed var(--danger); background:rgba(239,71,111,0.05); border-radius:12px;">
+                            <p style="color:var(--danger); font-weight:600; margin:0;">Could not connect to database pipeline layout.</p>
+                            <small style="color:var(--text-secondary); display:block; margin-top:0.5rem;">Ensure your background file is named get_products.php, it's inside the same folder, and XAMPP modules are running.</small>
+                        </div>`;
+                });
+        });
+    </script>
 </body>
+
 </html>

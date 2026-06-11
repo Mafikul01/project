@@ -38,7 +38,10 @@
     </style>
 </head>
 <body>
-    <?php session_start(); ?>
+    <?php session_start();if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
+    header("Location: login_form.php");
+    exit;
+} ?>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
@@ -46,7 +49,7 @@
                 <h1 class="logo">ModernStore</h1>
             </div>
             <div class="nav-menu">
-                <a href="index.php" class="nav-link">Home</a>
+                <a href="index.html" class="nav-link">Home</a>
                 <a href="products.php" class="nav-link">Shop</a>
                 <a href="add_form.php" class="nav-link active">Admin</a>
             </div>

@@ -15,7 +15,7 @@
                 <h1 class="logo">ModernStore</h1>
             </div>
             <div class="nav-menu">
-                <a href="index.php" class="nav-link">Home</a>
+                <a href="index.html" class="nav-link">Home</a>
                 <a href="products.php" class="nav-link active">Shop</a>
                 <a href="add_form.php" class="nav-link">Admin</a>
             </div>

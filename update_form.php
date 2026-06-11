@@ -166,8 +166,8 @@
                             </div>
 
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary btn-lg">💾 Save Changes</button>
-                                <a href="products.php" class="btn btn-secondary btn-lg">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg">💾 Save Changes</button>
+                            <a href="products.php" class="btn btn-secondary">Cancel</a>
                             </div>
                         </form>
                         <?php
